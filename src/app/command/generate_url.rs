@@ -1,36 +1,38 @@
 use async_trait::async_trait;
 
-use crate::adapters::id_provider::IdProvider;
+pub trait ShortUrlProvider {
+    fn provide(&self) -> String;
+}
 
 #[async_trait]
 pub trait GenerateShortUrlRepository {
     async fn save(&self, id: String, full_url: String) -> Result<(), String>;
 }
-pub struct GenerateShortUrl<P, R>
+pub struct GenerateShortUrlCommand<P, R>
 where
-    P: IdProvider,
+    P: ShortUrlProvider,
     R: GenerateShortUrlRepository,
 {
-    id_provider: P,
+    short_url_provider: P,
     repository: R,
 }
 
-impl<P, R> GenerateShortUrl<P, R>
+impl<P, R> GenerateShortUrlCommand<P, R>
 where
-    P: IdProvider,
+    P: ShortUrlProvider,
     R: GenerateShortUrlRepository,
 {
-    pub fn new(id_provider: P, repository: R) -> Self {
+    pub fn new(short_url_provider: P, repository: R) -> Self {
         Self {
-            id_provider,
+            short_url_provider,
             repository,
         }
     }
     async fn generate(&self, full_url: String) -> Result<String, String> {
-        let id = self.id_provider.provide();
+        let short_url = self.short_url_provider.provide();
 
-        self.repository.save(id.clone(), full_url).await?;
-        Ok(id)
+        self.repository.save(short_url.clone(), full_url).await?;
+        Ok(short_url)
     }
 }
 
@@ -42,18 +44,18 @@ mod tests {
     };
 
     use crate::{
-        adapters::id_provider::{FakeIdProvider, NanoIdProvider},
+        adapters::short_url_provider::{FakeUrlShortener, NanoUrlShortener},
         storage::in_memory::InMemoryRepository,
     };
 
-    use super::GenerateShortUrl;
+    use super::GenerateShortUrlCommand;
 
     #[tokio::test]
     async fn get_non_empty_short_url() {
-        let fake_id_provider = FakeIdProvider::new("1".to_owned());
+        let fake_id_provider = FakeUrlShortener::new("1".to_owned());
         let store = Arc::new(RwLock::new(HashMap::new()));
         let repository = InMemoryRepository::new(store);
-        let command = GenerateShortUrl::new(fake_id_provider, repository);
+        let command = GenerateShortUrlCommand::new(fake_id_provider, repository);
 
         let short_url = command
             .generate("https://youtube.com".to_owned())
@@ -65,10 +67,10 @@ mod tests {
 
     #[tokio::test]
     async fn comparing_different_urls() {
-        let nanoid_provider = NanoIdProvider;
+        let nanoid_provider = NanoUrlShortener;
         let store = Arc::new(RwLock::new(HashMap::new()));
         let repository = InMemoryRepository::new(store);
-        let command = GenerateShortUrl::new(nanoid_provider, repository);
+        let command = GenerateShortUrlCommand::new(nanoid_provider, repository);
 
         let short_url = command
             .generate("https://youtube.com".to_owned())
@@ -83,10 +85,10 @@ mod tests {
     }
     #[tokio::test]
     async fn check_non_empty_store() {
-        let nanoid_provider = NanoIdProvider;
+        let nanoid_provider = NanoUrlShortener;
         let store = Arc::new(RwLock::new(HashMap::new()));
         let repository = InMemoryRepository::new(store.clone());
-        let command = GenerateShortUrl::new(nanoid_provider, repository);
+        let command = GenerateShortUrlCommand::new(nanoid_provider, repository);
 
         let id = command
             .generate("https://youtube.com".to_owned())

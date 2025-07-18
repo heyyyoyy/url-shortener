@@ -1,19 +1,17 @@
-pub trait IdProvider {
-    fn provide(&self) -> String;
-}
+use crate::app::command::generate_url::ShortUrlProvider;
 
-pub struct NanoIdProvider;
+pub struct NanoUrlShortener;
 
-impl IdProvider for NanoIdProvider {
+impl ShortUrlProvider for NanoUrlShortener {
     fn provide(&self) -> String {
         nanoid::nanoid!(10)
     }
 }
-pub struct FakeIdProvider {
+pub struct FakeUrlShortener {
     id: String,
 }
 
-impl FakeIdProvider {
+impl FakeUrlShortener {
     pub fn new(id: String) -> Self {
         Self { id }
     }
@@ -23,7 +21,7 @@ impl FakeIdProvider {
     }
 }
 
-impl IdProvider for FakeIdProvider {
+impl ShortUrlProvider for FakeUrlShortener {
     fn provide(&self) -> String {
         self.id.clone()
     }

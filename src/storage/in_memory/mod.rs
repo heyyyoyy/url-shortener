@@ -5,7 +5,9 @@ use std::{
 
 use async_trait::async_trait;
 
-use crate::app::command::generate_url::GenerateShortUrlRepository;
+use crate::app::{
+    command::generate_url::GenerateShortUrlRepository, query::get_full_url::GetFullUrlRepository,
+};
 
 pub type InMemoryType = Arc<RwLock<HashMap<String, String>>>;
 
@@ -27,5 +29,20 @@ impl GenerateShortUrlRepository for InMemoryRepository {
             .map_err(|_| "Storage lock error".to_owned())?
             .insert(id, full_url);
         Ok(())
+    }
+}
+
+#[async_trait]
+impl GetFullUrlRepository for InMemoryRepository {
+    async fn get(&self, short_url: &str) -> Result<String, String> {
+        match self
+            .store
+            .read()
+            .map_err(|_| "Storage lock error".to_owned())?
+            .get(short_url)
+        {
+            Some(full_url) => Ok(full_url.clone()),
+            None => Err("Url not found".to_owned()),
+        }
     }
 }

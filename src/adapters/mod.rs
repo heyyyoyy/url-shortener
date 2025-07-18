@@ -1,1 +1,1 @@
-pub mod id_provider;
+pub mod short_url_provider;

@@ -28,7 +28,7 @@ where
             repository,
         }
     }
-    async fn generate(&self, full_url: String) -> Result<String, String> {
+    pub async fn generate(&self, full_url: String) -> Result<String, String> {
         let short_url = self.short_url_provider.provide();
 
         self.repository.save(short_url.clone(), full_url).await?;
@@ -44,7 +44,7 @@ mod tests {
     };
 
     use crate::{
-        adapters::short_url_provider::{FakeUrlShortener, NanoUrlShortener},
+        adapters::short_url_provider::{FakeShortUrl, NanoShortUrl},
         storage::in_memory::InMemoryRepository,
     };
 
@@ -52,7 +52,7 @@ mod tests {
 
     #[tokio::test]
     async fn get_non_empty_short_url() {
-        let fake_id_provider = FakeUrlShortener::new("1".to_owned());
+        let fake_id_provider = FakeShortUrl::new("1".to_owned());
         let store = Arc::new(RwLock::new(HashMap::new()));
         let repository = InMemoryRepository::new(store);
         let command = GenerateShortUrlCommand::new(fake_id_provider, repository);
@@ -67,7 +67,7 @@ mod tests {
 
     #[tokio::test]
     async fn comparing_different_urls() {
-        let nanoid_provider = NanoUrlShortener;
+        let nanoid_provider = NanoShortUrl;
         let store = Arc::new(RwLock::new(HashMap::new()));
         let repository = InMemoryRepository::new(store);
         let command = GenerateShortUrlCommand::new(nanoid_provider, repository);
@@ -85,7 +85,7 @@ mod tests {
     }
     #[tokio::test]
     async fn check_non_empty_store() {
-        let nanoid_provider = NanoUrlShortener;
+        let nanoid_provider = NanoShortUrl;
         let store = Arc::new(RwLock::new(HashMap::new()));
         let repository = InMemoryRepository::new(store.clone());
         let command = GenerateShortUrlCommand::new(nanoid_provider, repository);

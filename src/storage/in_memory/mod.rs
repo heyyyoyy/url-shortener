@@ -11,6 +11,7 @@ use crate::app::{
 
 pub type InMemoryType = Arc<RwLock<HashMap<String, String>>>;
 
+#[derive(Clone)]
 pub struct InMemoryRepository {
     store: InMemoryType,
 }

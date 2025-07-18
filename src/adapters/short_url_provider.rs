@@ -1,17 +1,17 @@
 use crate::app::command::generate_url::ShortUrlProvider;
 
-pub struct NanoUrlShortener;
+pub struct NanoShortUrl;
 
-impl ShortUrlProvider for NanoUrlShortener {
+impl ShortUrlProvider for NanoShortUrl {
     fn provide(&self) -> String {
         nanoid::nanoid!(10)
     }
 }
-pub struct FakeUrlShortener {
+pub struct FakeShortUrl {
     id: String,
 }
 
-impl FakeUrlShortener {
+impl FakeShortUrl {
     pub fn new(id: String) -> Self {
         Self { id }
     }
@@ -21,7 +21,7 @@ impl FakeUrlShortener {
     }
 }
 
-impl ShortUrlProvider for FakeUrlShortener {
+impl ShortUrlProvider for FakeShortUrl {
     fn provide(&self) -> String {
         self.id.clone()
     }

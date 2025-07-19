@@ -14,8 +14,8 @@ where
     R: GenerateShortUrlRepository,
     Q: GetFullUrlRepository,
 {
-    generate_short_url: GenerateShortUrlCommand<P, R>,
-    get_full_url: GetFullUrlQuery<Q>,
+    pub generate_short_url: GenerateShortUrlCommand<P, R>,
+    pub get_full_url: GetFullUrlQuery<Q>,
 }
 
 impl<P, R, Q> App<P, R, Q>

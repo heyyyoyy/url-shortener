@@ -99,9 +99,8 @@ where
         State(app): State<Arc<App<P, R, Q>>>,
         Json(params): Json<GenerateShortUrlRequest>,
     ) -> Result<Json<GenerateShortUrlResponse>, String> {
-        // TODO: Переписать full_url на &str
         app.generate_short_url
-            .generate(params.url)
+            .generate(&params.url)
             .await
             .map(|short_url| Json(GenerateShortUrlResponse { short_url }))
     }

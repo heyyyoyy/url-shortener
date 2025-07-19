@@ -28,10 +28,12 @@ where
             repository,
         }
     }
-    pub async fn generate(&self, full_url: String) -> Result<String, String> {
+    pub async fn generate(&self, full_url: &str) -> Result<String, String> {
         let short_url = self.short_url_provider.provide();
 
-        self.repository.save(short_url.clone(), full_url).await?;
+        self.repository
+            .save(short_url.clone(), full_url.to_owned())
+            .await?;
         Ok(short_url)
     }
 }
@@ -57,10 +59,7 @@ mod tests {
         let repository = InMemoryRepository::new(store);
         let command = GenerateShortUrlCommand::new(fake_id_provider, repository);
 
-        let short_url = command
-            .generate("https://youtube.com".to_owned())
-            .await
-            .unwrap();
+        let short_url = command.generate("https://youtube.com").await.unwrap();
 
         assert_ne!(short_url, "".to_owned());
     }
@@ -72,14 +71,8 @@ mod tests {
         let repository = InMemoryRepository::new(store);
         let command = GenerateShortUrlCommand::new(nanoid_provider, repository);
 
-        let short_url = command
-            .generate("https://youtube.com".to_owned())
-            .await
-            .unwrap();
-        let short_url_two = command
-            .generate("https://google.com".to_owned())
-            .await
-            .unwrap();
+        let short_url = command.generate("https://youtube.com").await.unwrap();
+        let short_url_two = command.generate("https://google.com").await.unwrap();
 
         assert_ne!(short_url, short_url_two);
     }
@@ -90,10 +83,7 @@ mod tests {
         let repository = InMemoryRepository::new(store.clone());
         let command = GenerateShortUrlCommand::new(nanoid_provider, repository);
 
-        let id = command
-            .generate("https://youtube.com".to_owned())
-            .await
-            .unwrap();
+        let id = command.generate("https://youtube.com").await.unwrap();
 
         assert_eq!(store.read().unwrap().len(), 1);
 

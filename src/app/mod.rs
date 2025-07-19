@@ -51,12 +51,8 @@ mod tests {
         let repo = InMemoryRepository::new(store);
         let app = App::new(url_provider, repo.clone(), repo);
 
-        let full_url = "https://youtube.com".to_owned();
-        let short_url = app
-            .generate_short_url
-            .generate(full_url.clone())
-            .await
-            .unwrap();
+        let full_url = "https://youtube.com";
+        let short_url = app.generate_short_url.generate(full_url).await.unwrap();
         let full_url_from_repo = app.get_full_url.get(&short_url).await.unwrap();
         assert_eq!(full_url, full_url_from_repo);
     }

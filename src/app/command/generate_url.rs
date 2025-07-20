@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use url::Url;
 
 use crate::{app::error::AppError, storage::error::StorageError};
 
@@ -31,10 +32,11 @@ where
         }
     }
     pub async fn generate(&self, full_url: &str) -> Result<String, AppError> {
+        let parsed_url = Url::parse(full_url)?;
         let short_url = self.short_url_provider.provide();
 
         self.repository
-            .save(short_url.clone(), full_url.to_owned())
+            .save(short_url.clone(), parsed_url.to_string())
             .await?;
         Ok(short_url)
     }
@@ -85,13 +87,13 @@ mod tests {
         let repository = InMemoryRepository::new(store.clone());
         let command = GenerateShortUrlCommand::new(nanoid_provider, repository);
 
-        let id = command.generate("https://youtube.com").await.unwrap();
+        let id = command.generate("https://youtube.com/").await.unwrap();
 
         assert_eq!(store.read().unwrap().len(), 1);
 
         assert_eq!(
             store.read().unwrap().get(&id).unwrap(),
-            "https://youtube.com"
+            "https://youtube.com/"
         );
     }
 }

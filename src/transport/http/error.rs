@@ -16,6 +16,7 @@ impl IntoResponse for AppError {
                 http::StatusCode::INTERNAL_SERVER_ERROR,
                 "Internal server error. Try again later.".to_owned(),
             ),
+            AppError::UrlParseError => (http::StatusCode::BAD_REQUEST, "Invalid Url".to_owned()),
         };
         (status, Json(ErrorResponse { message })).into_response()
     }

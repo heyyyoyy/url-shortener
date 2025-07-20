@@ -10,6 +10,6 @@
 - [ ] Add migrations
 - [ ] Refactoring tests with automock
 - [ ] Add tracing methods
-- [ ] Add validations
+- [x] Add validations
 - [x] Refactore errors from string to custom errors
 - [ ] Add reading settings from dev/prod configuration

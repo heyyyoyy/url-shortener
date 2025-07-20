@@ -29,10 +29,7 @@ impl InMemoryRepository {
 #[async_trait]
 impl GenerateShortUrlRepository for InMemoryRepository {
     async fn save(&self, short_url: String, full_url: String) -> Result<(), StorageError> {
-        self.store
-            .write()
-            .map_err(|_| StorageError::LockError)?
-            .insert(short_url, full_url);
+        self.store.write()?.insert(short_url, full_url);
         Ok(())
     }
 }
@@ -40,14 +37,38 @@ impl GenerateShortUrlRepository for InMemoryRepository {
 #[async_trait]
 impl GetFullUrlRepository for InMemoryRepository {
     async fn get(&self, short_url: &str) -> Result<String, StorageError> {
-        match self
-            .store
-            .read()
-            .map_err(|_| StorageError::LockError)?
-            .get(short_url)
-        {
+        match self.store.read()?.get(short_url) {
             Some(full_url) => Ok(full_url.clone()),
             None => Err(StorageError::NotFound),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        collections::HashMap,
+        sync::{Arc, RwLock},
+    };
+
+    use crate::{
+        app::query::get_full_url::GetFullUrlRepository,
+        storage::{error::StorageError, in_memory::InMemoryRepository},
+    };
+
+    #[tokio::test]
+    async fn get_lock_error() {
+        let store = Arc::new(RwLock::new(HashMap::new()));
+        let store_in = store.clone();
+        let repo = InMemoryRepository::new(store.clone());
+        let _ = tokio::spawn(async move {
+            let mut r = store_in.write().unwrap();
+            r.insert("".to_owned(), "".to_owned());
+            panic!();
+        })
+        .await;
+
+        let res = repo.get("123").await;
+        assert!(matches!(res, Err(StorageError::LockError(_))));
     }
 }

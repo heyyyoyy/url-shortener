@@ -10,3 +10,4 @@
 - [ ] Add tracing methods
 - [ ] Add validations
 - [ ] Refactore errors from string to custom errors
+- [ ] Add reading settings from dev/prod configuration

@@ -1,3 +1,5 @@
+pub mod error;
+
 use axum::{
     Json, Router,
     extract::{MatchedPath, Path, Request, State},
@@ -11,6 +13,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use crate::app::{
     App,
     command::generate_url::{GenerateShortUrlRepository, ShortUrlProvider},
+    error::AppError,
     query::get_full_url::GetFullUrlRepository,
 };
 
@@ -98,7 +101,7 @@ where
     async fn generate_short_url(
         State(app): State<Arc<App<P, R, Q>>>,
         Json(params): Json<GenerateShortUrlRequest>,
-    ) -> Result<Json<GenerateShortUrlResponse>, String> {
+    ) -> Result<Json<GenerateShortUrlResponse>, AppError> {
         app.generate_short_url
             .generate(&params.url)
             .await
@@ -108,7 +111,7 @@ where
     async fn get_full_url(
         State(app): State<Arc<App<P, R, Q>>>,
         Path(short_url): Path<String>,
-    ) -> Result<Json<GetFullUrlResponse>, String> {
+    ) -> Result<Json<GetFullUrlResponse>, AppError> {
         app.get_full_url
             .get(&short_url)
             .await

@@ -6,6 +6,7 @@ use crate::app::{
 };
 
 pub mod command;
+pub mod error;
 pub mod query;
 
 pub struct App<P, R, Q>

@@ -1,12 +1,14 @@
 use async_trait::async_trait;
 
+use crate::{app::error::AppError, storage::error::StorageError};
+
 pub trait ShortUrlProvider {
     fn provide(&self) -> String;
 }
 
 #[async_trait]
 pub trait GenerateShortUrlRepository {
-    async fn save(&self, short_url: String, full_url: String) -> Result<(), String>;
+    async fn save(&self, short_url: String, full_url: String) -> Result<(), StorageError>;
 }
 pub struct GenerateShortUrlCommand<P, R>
 where
@@ -28,7 +30,7 @@ where
             repository,
         }
     }
-    pub async fn generate(&self, full_url: &str) -> Result<String, String> {
+    pub async fn generate(&self, full_url: &str) -> Result<String, AppError> {
         let short_url = self.short_url_provider.provide();
 
         self.repository

@@ -5,8 +5,12 @@ use std::{
 
 use async_trait::async_trait;
 
-use crate::app::{
-    command::generate_url::GenerateShortUrlRepository, query::get_full_url::GetFullUrlRepository,
+use crate::{
+    app::{
+        command::generate_url::GenerateShortUrlRepository,
+        query::get_full_url::GetFullUrlRepository,
+    },
+    storage::error::StorageError,
 };
 
 pub type InMemoryType = Arc<RwLock<HashMap<String, String>>>;
@@ -24,10 +28,10 @@ impl InMemoryRepository {
 
 #[async_trait]
 impl GenerateShortUrlRepository for InMemoryRepository {
-    async fn save(&self, short_url: String, full_url: String) -> Result<(), String> {
+    async fn save(&self, short_url: String, full_url: String) -> Result<(), StorageError> {
         self.store
             .write()
-            .map_err(|_| "Storage lock error".to_owned())?
+            .map_err(|_| StorageError::LockError)?
             .insert(short_url, full_url);
         Ok(())
     }
@@ -35,15 +39,15 @@ impl GenerateShortUrlRepository for InMemoryRepository {
 
 #[async_trait]
 impl GetFullUrlRepository for InMemoryRepository {
-    async fn get(&self, short_url: &str) -> Result<String, String> {
+    async fn get(&self, short_url: &str) -> Result<String, StorageError> {
         match self
             .store
             .read()
-            .map_err(|_| "Storage lock error".to_owned())?
+            .map_err(|_| StorageError::LockError)?
             .get(short_url)
         {
             Some(full_url) => Ok(full_url.clone()),
-            None => Err("Url not found".to_owned()),
+            None => Err(StorageError::NotFound),
         }
     }
 }

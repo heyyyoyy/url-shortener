@@ -24,11 +24,11 @@ impl InMemoryRepository {
 
 #[async_trait]
 impl GenerateShortUrlRepository for InMemoryRepository {
-    async fn save(&self, id: String, full_url: String) -> Result<(), String> {
+    async fn save(&self, short_url: String, full_url: String) -> Result<(), String> {
         self.store
             .write()
             .map_err(|_| "Storage lock error".to_owned())?
-            .insert(id, full_url);
+            .insert(short_url, full_url);
         Ok(())
     }
 }

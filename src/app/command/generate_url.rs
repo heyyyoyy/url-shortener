@@ -6,7 +6,7 @@ pub trait ShortUrlProvider {
 
 #[async_trait]
 pub trait GenerateShortUrlRepository {
-    async fn save(&self, id: String, full_url: String) -> Result<(), String>;
+    async fn save(&self, short_url: String, full_url: String) -> Result<(), String>;
 }
 pub struct GenerateShortUrlCommand<P, R>
 where
